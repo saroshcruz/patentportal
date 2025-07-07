@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { motion } from "framer-motion"
 
 interface CounterProps {
   end: number
@@ -53,28 +54,75 @@ function Counter({ end, label, suffix = "" }: CounterProps) {
   }, [isVisible, end])
 
   return (
-    <div ref={counterRef} className="text-center">
-      <div className="text-4xl md:text-5xl font-bold text-blue-900 mb-2">
+    <motion.div
+      ref={counterRef}
+      className="text-center"
+      whileHover={{ scale: 1.05 }}
+      transition={{ type: "spring", stiffness: 300 }}
+    >
+      <motion.div
+        className="text-5xl md:text-6xl font-bold text-blue-900 mb-2"
+        initial={{ scale: 0 }}
+        whileInView={{ scale: 1 }}
+        transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
+      >
         {count.toLocaleString()}
         {suffix}
-      </div>
+      </motion.div>
       <div className="text-gray-600 font-medium text-lg">{label}</div>
-    </div>
+    </motion.div>
   )
+}
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.3,
+      delayChildren: 0.2,
+    },
+  },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: "easeOut",
+    },
+  },
 }
 
 export default function MilestoneCounter() {
   return (
-    <section className="py-16 bg-blue-50">
+    <section className="py-20 bg-gradient-to-r from-blue-50 to-indigo-50">
       <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Our Track Record</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Counter end={1500} label="Cases Won" suffix="+" />
-            <Counter end={20} label="Years Experience" suffix="+" />
-            <Counter end={98} label="Client Satisfaction" suffix="%" />
-          </div>
-        </div>
+        <motion.div
+          className="max-w-4xl mx-auto"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={containerVariants}
+        >
+          <motion.h2 className="text-4xl font-bold text-center text-gray-900 mb-12" variants={itemVariants}>
+            Our Track Record
+          </motion.h2>
+          <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-8" variants={containerVariants}>
+            <motion.div variants={itemVariants}>
+              <Counter end={1500} label="Cases Won" suffix="+" />
+            </motion.div>
+            <motion.div variants={itemVariants}>
+              <Counter end={20} label="Years Experience" suffix="+" />
+            </motion.div>
+            <motion.div variants={itemVariants}>
+              <Counter end={98} label="Client Satisfaction" suffix="%" />
+            </motion.div>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   )
