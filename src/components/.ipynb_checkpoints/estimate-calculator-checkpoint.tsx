@@ -1,32 +1,28 @@
-
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
 
-export default function EstimateCalculator({
-  onEstimateChange,
-}: {
-  onEstimateChange?: (data: any) => void
-}) {
+export default function EstimateCalculator() {
   const [keywords, setKeywords] = useState(5)
   const [complexity, setComplexity] = useState("Medium")
+  const [estimatedCost, setEstimatedCost] = useState(0)
 
-  useEffect(() => {
-    const baseCost = keywords * 50
+  const calculateCost = () => {
+    const baseCost = keywords * 50 // $50 per keyword
+
     const complexityMultiplier = {
       Low: 1.0,
       Medium: 1.5,
       High: 2.0,
     }
 
-    const estimatedCost =
-      baseCost * complexityMultiplier[complexity as keyof typeof complexityMultiplier]
+    const finalCost = baseCost * complexityMultiplier[complexity as keyof typeof complexityMultiplier]
+    setEstimatedCost(finalCost)
+  }
 
-    // Emit to parent
-    if (onEstimateChange) {
-      onEstimateChange({ keywords, complexity, estimatedCost })
-    }
-  }, [keywords, complexity, onEstimateChange])
+  useEffect(() => {
+    calculateCost()
+  }, [keywords, complexity])
 
   return (
     <div className="bg-blue-50 rounded-lg p-8 border border-blue-200">
@@ -44,8 +40,8 @@ export default function EstimateCalculator({
             min="1"
             max="50"
             value={keywords}
-            onChange={(e) => setKeywords(Number(e.target.value))}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => setKeywords(Number.parseInt(e.target.value) || 1)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
           />
         </div>
 
@@ -57,7 +53,7 @@ export default function EstimateCalculator({
             id="complexity"
             value={complexity}
             onChange={(e) => setComplexity(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
           >
             <option value="Low">Low - Simple mechanical inventions</option>
             <option value="Medium">Medium - Electronic or software inventions</option>
@@ -65,14 +61,28 @@ export default function EstimateCalculator({
           </select>
         </div>
 
-        <div className="bg-white rounded-lg p-6 border-2 border-blue-300 mt-4">
+        <div className="bg-white rounded-lg p-6 border-2 border-blue-300">
           <div className="text-center">
             <p className="text-sm font-medium text-gray-600 mb-2">Estimated Cost</p>
-            <p className="text-3xl font-bold text-blue-900">
-              ${((keywords * 50) * (complexity === "Low" ? 1 : complexity === "Medium" ? 1.5 : 2)).toLocaleString()}
-            </p>
+            <p className="text-3xl font-bold text-blue-900">${estimatedCost.toLocaleString()}</p>
             <p className="text-sm text-gray-500 mt-2">*Final cost may vary based on specific requirements</p>
           </div>
+        </div>
+
+        <div className="text-sm text-gray-600 space-y-2">
+          <p>
+            <strong>Calculation:</strong>
+          </p>
+          <p>
+            • Base cost: {keywords} keywords × $50 = ${(keywords * 50).toLocaleString()}
+          </p>
+          <p>
+            • Complexity multiplier: {complexity} (
+            {complexity === "Low" ? "1.0x" : complexity === "Medium" ? "1.5x" : "2.0x"})
+          </p>
+          <p>
+            • <strong>Total: ${estimatedCost.toLocaleString()}</strong>
+          </p>
         </div>
       </div>
     </div>

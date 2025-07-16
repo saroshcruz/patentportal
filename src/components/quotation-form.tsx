@@ -1,11 +1,11 @@
 // src/components/quotation-form.tsx
+
 "use client"
 
-import type React from "react"
 import { useState } from "react"
-import { supabase } from "@/lib/supabase" // <--- ADDED: Import your Supabase client
+import Script from "next/script"
 
-export default function QuotationForm() {
+export default function QuotationForm({ estimatedData }: { estimatedData: any }) {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -13,156 +13,126 @@ export default function QuotationForm() {
     country: "India",
     description: "",
   })
-  // <--- ADDED: State for managing submission status feedback to the user
-  const [submissionStatus, setSubmissionStatus] = useState('');
+
+  const [submissionStatus, setSubmissionStatus] = useState("")
+  const [isPaying, setIsPaying] = useState(false)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  // <--- MODIFIED: handleSubmit function to be asynchronous and handle Supabase insertion
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSubmissionStatus('Submitting...'); // Set status to indicate submission is in progress
+
+    if (!estimatedData || typeof estimatedData.estimatedCost !== "number") {
+      console.error("❌ Missing or invalid estimatedData:", estimatedData)
+      setSubmissionStatus("Please use the estimator before submitting.")
+      return
+    }
+
+    setIsPaying(true)
 
     try {
-      const { data, error } = await supabase
-        .from('patentability-requests') // Your Supabase table name
-        .insert([
-          {
-            full_name: formData.fullName,
-            email: formData.email,
-            phone: formData.phone,
-            country: formData.country,
-            description: formData.description,
-            // 'id' and 'created_at' columns are usually handled automatically by Supabase
-          },
-        ])
-        .select(); // Use .select() to get the inserted data back if you need it
+      const orderRes = await fetch("/api/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          estimatedCost: estimatedData.estimatedCost,
+        }),
+      })
 
-      if (error) {
-        console.error('Supabase insertion error:', error);
-        setSubmissionStatus(`Error: ${error.message}`); // Display specific error message
-      } else {
-        console.log('Submission successful:', data);
-        setSubmissionStatus('Request submitted successfully! We will contact you shortly.');
-        // Clear form fields on successful submission
-        setFormData({ fullName: "", email: "", phone: "", country: "India", description: "" });
-      }
-    } catch (error: any) { // Catch any unexpected errors during the try block
-      console.error('An unexpected error occurred during submission:', error);
-      setSubmissionStatus(`An unexpected error occurred: ${error.message || 'Please try again.'}`);
+      const { orderId, amount } = await orderRes.json()
+
+      const razorpay = new (window as any).Razorpay({
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount,
+        currency: "INR",
+        name: "Patentability",
+        description: "Patent Search Estimate",
+        order_id: orderId,
+        handler: async function (response: any) {
+          const verifyRes = await fetch("/api/verify-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(response),
+          })
+
+          const { verified } = await verifyRes.json()
+          if (!verified) {
+            setSubmissionStatus("❌ Payment verification failed.")
+            return
+          }
+
+          const contactRes = await fetch("/api/contact", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: formData.fullName,
+              email: formData.email,
+              phone: formData.phone,
+              message: formData.description,
+              complexity: estimatedData?.complexity,
+              payment_id: response.razorpay_payment_id,
+            }),
+          })
+
+          const result = await contactRes.json()
+          if (result.success) {
+            setSubmissionStatus("✅ Successfully submitted and paid.")
+            setFormData({ fullName: "", email: "", phone: "", country: "India", description: "" })
+          } else {
+            setSubmissionStatus("⚠️ Payment done, but submission failed.")
+          }
+        },
+        prefill: {
+          name: formData.fullName,
+          email: formData.email,
+          contact: formData.phone,
+        },
+        theme: { color: "#1e3a8a" },
+      })
+
+      razorpay.open()
+    } catch (err) {
+      console.error(err)
+      setSubmissionStatus("⚠️ Unexpected error during payment.")
+    } finally {
+      setIsPaying(false)
     }
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-8">
-      <h3 className="text-2xl font-bold text-gray-900 mb-6">Request Quotation</h3>
-      <p className="text-gray-600 mb-8">Get a personalized quote for your patentability search needs.</p>
+    <>
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" />
+      <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-8">
+        <h3 className="text-2xl font-bold text-gray-900 mb-6">Request Quotation</h3>
+        <p className="text-gray-600 mb-8">Get a personalized quote for your patentability search needs.</p>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
-            Full Name *
-          </label>
-          <input
-            type="text"
-            id="fullName"
-            name="fullName"
-            value={formData.fullName}
-            onChange={handleInputChange}
-            required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
-            placeholder="Enter your full name"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-            Email Address *
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
-            placeholder="Enter your email address"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-            Phone Number *
-          </label>
-          <input
-            type="text"
-            id="phone"
-            name="phone"
-            value={formData.phone}
-            onChange={handleInputChange}
-            required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
-            placeholder="Enter your phone number"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-2">
-            Country of Interest *
-          </label>
-          <select
-            id="country"
-            name="country"
-            value={formData.country}
-            onChange={handleInputChange}
-            required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
-          >
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <input type="text" name="fullName" required value={formData.fullName} onChange={handleInputChange} placeholder="Full Name" className="w-full border px-4 py-3 rounded-lg" />
+          <input type="email" name="email" required value={formData.email} onChange={handleInputChange} placeholder="Email" className="w-full border px-4 py-3 rounded-lg" />
+          <input type="text" name="phone" required value={formData.phone} onChange={handleInputChange} placeholder="Phone" className="w-full border px-4 py-3 rounded-lg" />
+          <select name="country" value={formData.country} onChange={handleInputChange} className="w-full border px-4 py-3 rounded-lg">
             <option value="India">India</option>
             <option value="US">US</option>
             <option value="Japan">Japan</option>
             <option value="Europe">Europe</option>
             <option value="Other">Other</option>
           </select>
-        </div>
+          <textarea name="description" required value={formData.description} onChange={handleInputChange} placeholder="Describe your invention..." className="w-full border px-4 py-3 rounded-lg" rows={5} />
 
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-            Brief Description of Invention *
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            required
-            rows={6}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 resize-vertical"
-            placeholder="Provide a detailed description of your invention, including key features, functionality, and any unique aspects that distinguish it from existing solutions..."
-          />
-        </div>
+          <button type="submit" disabled={isPaying} className="w-full bg-blue-900 text-white py-4 rounded-lg">
+            {isPaying ? "Processing..." : "Submit & Pay"}
+          </button>
 
-        <button
-          type="submit"
-          className="w-full bg-blue-900 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-blue-800 transition-colors duration-300 shadow-sm"
-          // <--- ADDED: Disable button while submitting
-          disabled={submissionStatus.includes('Submitting')}
-        >
-          {/* <--- MODIFIED: Button text changes based on submission status */}
-          {submissionStatus.includes('Submitting') ? 'Submitting...' : 'Submit Request'}
-        </button>
-
-        {/* <--- ADDED: Display submission status messages */}
-        {submissionStatus && (
-          <p className={`mt-4 text-center ${submissionStatus.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>
-            {submissionStatus}
-          </p>
-        )}
-      </form>
-    </div>
+          {submissionStatus && (
+            <p className={`mt-4 text-center ${submissionStatus.includes("✅") ? "text-green-600" : "text-red-600"}`}>
+              {submissionStatus}
+            </p>
+          )}
+        </form>
+      </div>
+    </>
   )
 }
