@@ -33,7 +33,7 @@ export async function POST(req: Request) {
       `,
     });
 
-    const { data, error: dbError } = await supabase.from('ipfiling').insert([
+    const { data, error: dbError } = await supabase.from('leads').insert([
       {
         name,
         email,
