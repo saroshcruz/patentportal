@@ -1,84 +1,143 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Shield } from "lucide-react"
+import { useState } from "react";
+import { motion, easeInOut } from "framer-motion";
+import {
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  Search,
+  PenTool,
+  MessageCircle,
+  Target,
+  Scale,
+  Users,
+  Award,
+} from "lucide-react";
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.3,
-      delayChildren: 0.2,
-    },
+const cards = [
+  {
+    icon: <Search size={32} />,
+    title: "Patentability Search",
+    description:
+      "Discover if your invention is novel and non-obvious before applying.",
   },
-}
+  {
+    icon: <FileText size={32} />,
+    title: "Patent Drafting",
+    description:
+      "Get professionally drafted patent applications ready for filing.",
+  },
+  {
+    icon: <PenTool size={32} />,
+    title: "Patent Filing",
+    description:
+      "File your patent in India or internationally with expert guidance.",
+  },
+  {
+    icon: <MessageCircle size={32} />,
+    title: "Office Action Response",
+    description:
+      "Expert help in responding to objections raised by the patent office.",
+  },
+  {
+    icon: <Target size={32} />,
+    title: "Patent Prosecution",
+    description:
+      "Strategic follow-through from filing to grant of the patent.",
+  },
+  {
+    icon: <Scale size={32} />,
+    title: "Patent Litigation",
+    description:
+      "Enforce your patent rights or defend against infringement claims.",
+  },
+  {
+    icon: <Users size={32} />,
+    title: "IP Commercialization",
+    description:
+      "Monetize your IP through licensing, sales, or tech transfer.",
+  },
+  {
+    icon: <Award size={32} />,
+    title: "Patent Portfolio Management",
+    description:
+      "End-to-end management of your IP assets for maximum value.",
+  },
+];
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 50 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.8,
-      ease: "easeOut",
+      duration: 0.6,
+      ease: easeInOut, // ✅ Type-safe easing value
     },
   },
-}
+};
 
-export default function AboutUs() {
+export default function Home() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const itemsPerPage = 4;
+  const maxIndex = Math.ceil(cards.length / itemsPerPage) - 1;
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => Math.min(prev + 1, maxIndex));
+  };
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => Math.max(prev - 1, 0));
+  };
+
+  const visibleCards = cards.slice(
+    currentIndex * itemsPerPage,
+    (currentIndex + 1) * itemsPerPage
+  );
+
   return (
-    <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
-        <motion.div
-          className="max-w-6xl mx-auto"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={containerVariants}
+    <div className="min-h-screen bg-gray-50 p-8">
+      <h1 className="text-4xl font-bold text-center mb-6">
+        Our Patent Services
+      </h1>
+
+      <div className="relative">
+        {/* Navigation Arrows */}
+        <button
+          onClick={handlePrev}
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white shadow p-2 rounded-full z-10"
+          disabled={currentIndex === 0}
         >
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            <motion.div className="lg:col-span-8" variants={itemVariants}>
-              <motion.h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8" variants={itemVariants}>
-                About Us
-              </motion.h2>
+          <ChevronLeft />
+        </button>
 
-              <motion.div className="space-y-6 text-gray-600 leading-relaxed" variants={containerVariants}>
-                <motion.p className="text-lg" variants={itemVariants}>
-                  At LegalCo, we are committed to providing exceptional legal services that prioritize
-                  <strong className="text-blue-900"> security, simplicity, and efficiency</strong>. Our firm has built a
-                  reputation for delivering comprehensive intellectual property solutions that protect our clients' most
-                  valuable assets while ensuring a seamless experience throughout the legal process.
-                </motion.p>
+        <button
+          onClick={handleNext}
+          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white shadow p-2 rounded-full z-10"
+          disabled={currentIndex === maxIndex}
+        >
+          <ChevronRight />
+        </button>
 
-                <motion.p className="text-lg" variants={itemVariants}>
-                  Our mission is to bridge the gap between complex legal requirements and practical business needs. We
-                  believe that legal services should be accessible, transparent, and results-driven. With our team of
-                  experienced attorneys and cutting-edge technology, we streamline traditional legal processes to
-                  deliver faster, more cost-effective solutions without compromising on quality.
-                </motion.p>
-
-                <motion.p className="text-lg" variants={itemVariants}>
-                  We value integrity, innovation, and client satisfaction above all else. Our professional approach
-                  combines deep legal expertise with modern efficiency, ensuring that every client receives personalized
-                  attention and strategic guidance tailored to their unique needs. Trust LegalCo to secure your legal
-                  future with confidence and peace of mind.
-                </motion.p>
-              </motion.div>
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 mx-12">
+          {visibleCards.map((card, index) => (
+            <motion.div
+              key={card.title}
+              className="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center text-center"
+              initial="hidden"
+              animate="visible"
+              variants={itemVariants}
+            >
+              <div className="text-indigo-600 mb-4">{card.icon}</div>
+              <h3 className="text-lg font-semibold">{card.title}</h3>
+              <p className="text-sm text-gray-600 mt-2">{card.description}</p>
             </motion.div>
-
-            <motion.div className="lg:col-span-4 flex justify-center" variants={itemVariants}>
-              <motion.div
-                className="bg-blue-50 rounded-full p-8"
-                whileHover={{ scale: 1.05, rotate: 5 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <Shield className="h-24 w-24 text-blue-900" />
-              </motion.div>
-            </motion.div>
-          </div>
-        </motion.div>
+          ))}
+        </div>
       </div>
-    </section>
-  )
+    </div>
+  );
 }
