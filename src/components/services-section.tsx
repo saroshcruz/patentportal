@@ -1,6 +1,6 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { easeOut, motion } from "framer-motion"
 import { Search, FileText, Lightbulb } from "lucide-react"
 import EnhancedServiceCard from "@/components/enhanced-service-card"
 
@@ -22,7 +22,7 @@ const itemVariants = {
     y: 0,
     transition: {
       duration: 0.6,
-      ease: "easeOut",
+      ease: easeOut,
     },
   },
 }

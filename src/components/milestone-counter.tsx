@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { motion } from "framer-motion"
+import { easeOut, motion } from "framer-motion"
 
 interface CounterProps {
   end: number
@@ -92,7 +92,7 @@ const itemVariants = {
     y: 0,
     transition: {
       duration: 0.8,
-      ease: "easeOut",
+      ease: easeOut
     },
   },
 }
