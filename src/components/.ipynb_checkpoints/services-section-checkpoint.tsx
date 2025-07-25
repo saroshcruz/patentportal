@@ -2,7 +2,11 @@
 "use client"
 
 import { easeOut, motion } from "framer-motion"
+<<<<<<< HEAD
+import { Search, FileText, Lightbulb } from "lucide-react"
+=======
 import { Search, PenTool, FileText, Gavel } from "lucide-react"
+>>>>>>> 7da33eb (updated for discount and new page check if my idea is patentable)
 import EnhancedServiceCard from "@/components/enhanced-service-card"
 
 const containerVariants = {

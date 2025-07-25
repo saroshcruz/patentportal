@@ -18,10 +18,10 @@ export async function POST(req: Request) {
     });
 
     await transporter.sendMail({
-      from: `"Patent Site" <${process.env.EMAIL_USER}>`,
+      from: "Patent Site" <${process.env.EMAIL_USER}>,
       to: process.env.EMAIL_TO,
       subject: '📥 New Patent Inquiry + Payment Received',
-      html: `
+      html: 
         <h2>New Lead</h2>
         <p><strong>Name:</strong> ${name}</p>
         <p><strong>Email:</strong> ${email}</p>
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
         <p><strong>Complexity:</strong> ${complexity || 'N/A'}</p>
         <p><strong>Urgency:</strong> ${urgency || 'N/A'}</p>
         <p><strong>Payment ID:</strong> ${payment_id || 'N/A'}</p>
-      `,
+      ,
     });
 
     const { data, error: dbError } = await supabase.from('leads').insert([
@@ -57,3 +57,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, message: 'Failed to process lead' }, { status: 500 });
   }
 }
+

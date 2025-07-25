@@ -79,7 +79,23 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       <Header />
       <HeroBanner />
-
+    <section className="py-8 bg-white text-center">
+  <div className="container mx-auto">
+    <h2 className="text-2xl font-semibold mb-4">Not sure where to start?</h2>
+    <div className="flex justify-center gap-4">
+      <a href="/validate-idea">
+        <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl shadow">
+          Check if My Idea is Patentable
+        </button>
+      </a>
+      <a href="/services/patentability-search">
+        <button className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-xl shadow">
+          I Know What I Need
+        </button>
+      </a>
+    </div>
+  </div>
+</section>
       {/* Services Section */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">

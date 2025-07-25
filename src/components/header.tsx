@@ -4,6 +4,8 @@ import { useState } from "react"
 import { ChevronDown } from "lucide-react"
 
 export default function Header() {
+  const showEarlyBirdOffer = process.env.NEXT_PUBLIC_SHOW_EARLY_BIRD_OFFER === 'true';
+  const showIncentives = process.env.NEXT_PUBLIC_SHOW_INCENTIVES === 'true';
   const [selectedCountry, setSelectedCountry] = useState("India")
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
@@ -29,6 +31,17 @@ export default function Header() {
           <div className="flex-shrink-0">
             <div className="text-2xl font-bold text-blue-900">LegalCo Logo</div>
           </div>
+          {showEarlyBirdOffer && (
+            <div className="flex-shrink-0">
+              <div className="text-2xl font-bold text-blue-900">Checkout our early bird inaugural offer</div>
+            </div>
+          )}
+
+         {showIncentives && (
+          <div className="flex-shrink-0">
+             <div className="text-2xl font-bold text-blue-900">Announcing special incentives</div>
+          </div>
+          )}
 
           {/* Right side - Country Dropdown and Navigation */}
           <div className="flex items-center space-x-8">

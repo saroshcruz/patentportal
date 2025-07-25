@@ -4,6 +4,8 @@ import { useState } from "react"
 import Header from "@/components/header"
 import QuotationForm from "@/components/quotation-form"
 import EstimateCalculator from "@/components/estimate-calculator"
+import { HomeIcon } from '@heroicons/react/24/solid'; 
+import Link from 'next/link';
 
 
 export default function PatentabilitySearchPage() {
@@ -24,6 +26,10 @@ export default function PatentabilitySearchPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
+      <span className="text-xl mr-2">🏠</span>
+      <span>Home</span>  
+    </Link>     
       <Header />
 
       {/* Hero Section */}
