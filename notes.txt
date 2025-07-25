@@ -1,0 +1,19 @@
+working code for payment portal
+
+new plan
+
+              +--------------------+
+              |     Homepage       |
+              +--------------------+
+                  /            \
+    [First-time user]        [Returning user]
+       /                            \
+"Check if patentable"         "Calculate Cost"
+       |
+ Upload form + Idea desc
+       |
+  Get Evaluation Result
+       |
+ "Proceed to File Patent"
+       |
+  Cost Estimator → Payment
